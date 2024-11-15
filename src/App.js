@@ -111,9 +111,6 @@ const App = () => {
           logger.info('Uygulama sıfırlama başlatıldı');
           resetApplication();
         }
-      } else if ((e.key === 'j' || e.key === 'J') && showFullScreen && !isAnalyzing) {
-        logger.info('Yeniden analiz başlatıldı');
-        reanalyzeImage();
       }
     };
 
@@ -173,59 +170,6 @@ const App = () => {
     }, 3000);
   };
 
-  const reanalyzeImage = async () => {
-    if (!capturedImage) {
-      logger.error('Yeniden analiz için görüntü bulunamadı');
-      return;
-    }
-
-    logger.info('Yeniden analiz başlatıldı');
-    setIsAnalyzing(true);
-    setShowFullScreen(false);
-
-    try {
-      const anthropic = new Anthropic({
-        apiKey: "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",
-        dangerouslyAllowBrowser: true
-      });
-
-      logger.info('Claude API isteği gönderiliyor');
-      const msg = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 8192,
-        temperature: 0,
-        system: "Türkçe anlat. Markdown formatında cevap ver.",
-        messages: [
-          {
-            "role": "user",
-            "content": [
-              {
-                "type": "image",
-                "source": {
-                  "type": "base64",
-                  "media_type": "image/jpeg",
-                  "data": capturedImage
-                }
-              },
-              {
-                "type": "text",
-                "text": "Analiz et"
-              }
-            ]
-          }
-        ]
-      });
-
-      logger.info('Claude API yanıtı alındı');
-      setAiResponse(msg.content[0].text);
-    } catch (error) {
-      logger.error('Claude API hatası:', error);
-      setError('AI analiz sırasında bir hata oluştu');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
   const captureAndAnalyze = async () => {
     if (!videoRef.current || !videoRef.current.videoWidth) {
       logger.error('Video referansı hazır değil');
@@ -270,7 +214,7 @@ const App = () => {
               },
               {
                 "type": "text",
-                "text": "Analiz et"
+                "text": "sa"
               }
             ]
           }
@@ -374,7 +318,7 @@ const App = () => {
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold">AI Analiz Sonucu</h1>
               <div className="text-gray-600">
-                Çıkmak için G tuşuna basın | Tekrar analiz için J tuşuna basın
+                Çıkmak için G tuşuna basın
               </div>
             </div>
             <div className="prose prose-lg max-w-none">
