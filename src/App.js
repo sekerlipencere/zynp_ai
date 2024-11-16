@@ -194,7 +194,17 @@ const App = () => {
         dangerouslyAllowBrowser: true
       });
 
-      logger.info('Claude API analiz isteği gönderiliyor');
+      // Öğrenci bilgilerini içeren metin oluşturma
+      const studentInfoText = `
+Öğrenci Bilgileri:
+- Okul Numarası: ${studentData.okul_no}
+- Ad: ${studentData.ad}
+- Soyad: ${studentData.soyad}
+- Sınıf: ${studentData.sinif}
+
+`;
+
+      logger.info('Claude API analiz isteği gönderiliyor', { studentInfo: studentData });
       const msg = await anthropic.messages.create({
         model: "claude-3-5-sonnet-20241022",
         max_tokens: 8192,
@@ -214,7 +224,7 @@ const App = () => {
               },
               {
                 "type": "text",
-                "text": "sa"
+                "text": studentInfoText
               }
             ]
           }
@@ -233,11 +243,31 @@ const App = () => {
 
   const startWebcam = async () => {
     try {
-      logger.info('Webcam erişimi isteniyor');
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      logger.info('Webcam erişimi isteniyor - 1920x1080 çözünürlük ile');
+      const constraints = {
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          facingMode: "user"
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        logger.info('Webcam başarıyla başlatıldı');
+
+        // Video boyutlarını doğrulama
+        videoRef.current.onloadedmetadata = () => {
+          const actualWidth = videoRef.current.videoWidth;
+          const actualHeight = videoRef.current.videoHeight;
+          logger.info('Webcam başarıyla başlatıldı', {
+            requestedWidth: 1920,
+            requestedHeight: 1080,
+            actualWidth,
+            actualHeight
+          });
+        };
       }
     } catch (err) {
       logger.error('Webcam erişim hatası:', err);
